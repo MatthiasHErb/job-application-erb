@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function SuccessPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[var(--unibe-green)] text-white py-6 px-6">
+      <header className="bg-[var(--unibe-red)] text-white py-6 px-6">
         <div className="max-w-3xl mx-auto">
           <Link
             href="https://www.unibe.ch/index_eng.html"
@@ -20,8 +20,8 @@ export default function SuccessPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-16">
-        <div className="rounded-lg border border-green-200 bg-green-50 p-8">
-          <h1 className="text-2xl font-semibold text-[var(--unibe-green)] mb-4">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-8">
+          <h1 className="text-2xl font-semibold text-[var(--unibe-red)] mb-4">
             Application received. Thank you!
           </h1>
           <p className="text-gray-700 leading-relaxed">
@@ -33,7 +33,7 @@ export default function SuccessPage() {
 
         <Link
           href="/"
-          className="inline-block mt-8 text-[var(--unibe-green)] hover:underline font-medium"
+          className="inline-block mt-8 text-[var(--unibe-red)] hover:underline font-medium"
         >
           ← Back to job posting
         </Link>

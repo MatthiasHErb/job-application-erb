@@ -1,9 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --unibe-green: #0d3d2e;
-  --unibe-green-light: #1a5f4a;
-  --unibe-green-dark: #082a20;
+  --unibe-red: #e4003c;
+  --unibe-red-dark: #c90032;
   --background: #ffffff;
   --foreground: #171717;
 }

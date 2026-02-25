@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_NAME_LENGTH = 100;
+const PDF_MAGIC_BYTES = Buffer.from("%PDF-", "utf8");
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const RATE_LIMIT_MAX = 3; // Max 3 submissions per IP per hour
+
+function isPdf(buffer: Buffer): boolean {
+  return buffer.length >= 5 && buffer.subarray(0, 5).equals(PDF_MAGIC_BYTES);
+}
 
 // In-memory rate limit store (use Redis/Upstash in production for multi-instance)
 const rateLimitStore = new Map<string, number[]>();
@@ -53,6 +59,22 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const firstName = (formData.get("firstName") as string)?.trim() || "";
+    const lastName = (formData.get("lastName") as string)?.trim() || "";
+
+    if (!firstName || !lastName) {
+      return NextResponse.json(
+        { error: "First name and last name are required." },
+        { status: 400 }
+      );
+    }
+
+    if (firstName.length > MAX_NAME_LENGTH || lastName.length > MAX_NAME_LENGTH) {
+      return NextResponse.json(
+        { error: "First name and last name must not exceed 100 characters each." },
+        { status: 400 }
+      );
+    }
 
     if (!file) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });
@@ -71,12 +93,21 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const safeFirstName = firstName.replace(/[^a-zA-Z0-9\s\-äöüÄÖÜàáâãäåèéêëìíîïòóôõöùúûüýÿñç]/g, "").trim();
+    const safeLastName = lastName.replace(/[^a-zA-Z0-9\s\-äöüÄÖÜàáâãäåèéêëìíîïòóôõöùúûüýÿñç]/g, "").trim();
+    const fileName = `${safeFirstName || "First"} ${safeLastName || "Last"}.pdf`;
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const filePath = `applications/${timestamp}_${safeName}`;
+    const filePath = `applications/${timestamp}_${fileName}`;
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    if (!isPdf(buffer)) {
+      return NextResponse.json(
+        { error: "Invalid file. Only PDF files are accepted." },
+        { status: 400 }
+      );
+    }
 
     const { error: uploadError } = await supabase.storage
       .from("job-applications")

@@ -7,6 +7,8 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
@@ -37,6 +39,18 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!firstName.trim()) {
+      setError("Please enter your first name.");
+      return;
+    }
+    if (!lastName.trim()) {
+      setError("Please enter your last name.");
+      return;
+    }
+    if (firstName.length > 100 || lastName.length > 100) {
+      setError("First name and last name must not exceed 100 characters each.");
+      return;
+    }
     if (!file) {
       setError("Please select a PDF file to upload.");
       return;
@@ -54,6 +68,8 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("firstName", firstName.trim());
+      formData.append("lastName", lastName.trim());
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -77,7 +93,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* UniBe Header */}
-      <header className="bg-[var(--unibe-green)] text-white py-6 px-6">
+      <header className="bg-[var(--unibe-red)] text-white py-6 px-6">
         <div className="max-w-3xl mx-auto">
           <Link
             href="https://www.unibe.ch/index_eng.html"
@@ -94,7 +110,7 @@ export default function Home() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-12">
-        <h1 className="text-2xl font-semibold text-[var(--unibe-green)] mb-2">
+        <h1 className="text-2xl font-semibold text-[var(--unibe-red)] mb-2">
           Post Doc in Plant Volatile Interactions (100%)
         </h1>
         <p className="text-sm text-gray-600 mb-8">
@@ -122,7 +138,7 @@ export default function Home() {
             this fascinating phenomenon.
           </p>
 
-          <h2 className="text-lg font-semibold text-[var(--unibe-green)] mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--unibe-red)] mt-8 mb-4">
             What we expect
           </h2>
           <ul className="list-disc pl-6 text-gray-700 space-y-2 mb-6">
@@ -141,7 +157,7 @@ export default function Home() {
             <li>Willingness to pursue a long-term academic career.</li>
           </ul>
 
-          <h2 className="text-lg font-semibold text-[var(--unibe-green)] mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--unibe-red)] mt-8 mb-4">
             What we offer
           </h2>
           <ul className="list-disc pl-6 text-gray-700 space-y-2 mb-6">
@@ -154,7 +170,7 @@ export default function Home() {
             </li>
           </ul>
 
-          <h2 className="text-lg font-semibold text-[var(--unibe-green)] mt-8 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--unibe-red)] mt-8 mb-4">
             How to apply
           </h2>
           <p className="text-gray-700 mb-6">
@@ -169,7 +185,7 @@ export default function Home() {
               href="https://www.ips.unibe.ch/research/interactions/index_eng.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[var(--unibe-green)] hover:underline"
+              className="text-[var(--unibe-red)] hover:underline"
             >
               https://www.ips.unibe.ch/research/interactions/index_eng.html
             </a>
@@ -178,7 +194,7 @@ export default function Home() {
 
         {/* Application Form */}
         <section className="border-t border-gray-200 pt-12">
-          <h2 className="text-xl font-semibold text-[var(--unibe-green)] mb-6">
+          <h2 className="text-xl font-semibold text-[var(--unibe-red)] mb-6">
             Submit your application
           </h2>
 
@@ -197,6 +213,43 @@ export default function Home() {
               />
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="first-name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  First Name
+                </label>
+                <input
+                  id="first-name"
+                  type="text"
+                  required
+                  maxLength={100}
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-[var(--unibe-red)] focus:outline-none focus:ring-1 focus:ring-[var(--unibe-red)]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="last-name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Last Name
+                </label>
+                <input
+                  id="last-name"
+                  type="text"
+                  required
+                  maxLength={100}
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-[var(--unibe-red)] focus:outline-none focus:ring-1 focus:ring-[var(--unibe-red)]"
+                />
+              </div>
+            </div>
+
             <div>
               <label
                 htmlFor="pdf-upload"
@@ -207,9 +260,9 @@ export default function Home() {
               <input
                 id="pdf-upload"
                 type="file"
-                accept="application/pdf"
+                accept=".pdf,application/pdf"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-[var(--unibe-green)] file:text-white hover:file:bg-[var(--unibe-green-light)] file:cursor-pointer"
+                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-[var(--unibe-red)] file:text-white hover:file:bg-[var(--unibe-red-dark)] file:cursor-pointer"
               />
               {file && (
                 <p className="mt-2 text-sm text-gray-600">
@@ -224,20 +277,14 @@ export default function Home() {
 
             <button
               type="submit"
-              disabled={!file || isSubmitting}
-              className="w-full sm:w-auto px-8 py-3 bg-[var(--unibe-green)] text-white font-medium rounded hover:bg-[var(--unibe-green-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={!firstName.trim() || !lastName.trim() || !file || isSubmitting}
+              className="w-full sm:w-auto px-8 py-3 bg-[var(--unibe-red)] text-white font-medium rounded hover:bg-[var(--unibe-red-dark)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Uploading…" : "Submit application"}
             </button>
           </form>
         </section>
       </main>
-
-      <footer className="border-t border-gray-200 mt-16 py-8 px-6">
-        <div className="max-w-3xl mx-auto text-center text-sm text-gray-500">
-          <p>© University of Bern · Institute of Plant Sciences</p>
-        </div>
-      </footer>
     </div>
   );
 }
