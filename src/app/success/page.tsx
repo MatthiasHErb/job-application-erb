@@ -29,6 +29,16 @@ export default function SuccessPage() {
             not send out rejection messages for people who are not shortlisted in order to conserve
             resources. If you do not hear from us within 6 weeks, you were likely not shortlisted.
           </p>
+          <p className="text-gray-700 leading-relaxed mt-4">
+            In case of questions, feel free to contact{" "}
+            <a
+              href="mailto:matthias.erb@unibe.ch"
+              className="text-[var(--unibe-red)] hover:underline"
+            >
+              matthias.erb@unibe.ch
+            </a>
+            .
+          </p>
         </div>
 
         <Link
