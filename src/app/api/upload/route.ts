@@ -11,6 +11,16 @@ function isPdf(buffer: Buffer): boolean {
   return buffer.length >= 5 && buffer.subarray(0, 5).equals(PDF_MAGIC_BYTES);
 }
 
+function sanitizeNameForFilename(name: string): string {
+  // Normalize and strip diacritics so storage keys stay ASCII-safe.
+  return name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9\s-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // In-memory rate limit store (use Redis/Upstash in production for multi-instance)
 const rateLimitStore = new Map<string, number[]>();
 
@@ -93,8 +103,8 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const safeFirstName = firstName.replace(/[^a-zA-Z0-9\s\-äöüÄÖÜàáâãäåèéêëìíîïòóôõöùúûüýÿñç]/g, "").trim();
-    const safeLastName = lastName.replace(/[^a-zA-Z0-9\s\-äöüÄÖÜàáâãäåèéêëìíîïòóôõöùúûüýÿñç]/g, "").trim();
+    const safeFirstName = sanitizeNameForFilename(firstName);
+    const safeLastName = sanitizeNameForFilename(lastName);
     const fileName = `${safeFirstName || "First"} ${safeLastName || "Last"}.pdf`;
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filePath = `applications/${timestamp}_${fileName}`;
